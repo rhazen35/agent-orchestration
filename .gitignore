@@ -1,0 +1,15 @@
+# IDE
+.idea/
+.vscode/
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
+# Composer
+vendor/
+composer.lock
+
+# Cache
+cache/project-fingerprint.json
+cache/discovery-report.md
