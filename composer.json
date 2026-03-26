@@ -1,0 +1,34 @@
+{
+    "name": "rhazen35/agent-orchestration",
+    "description": "A tool-agnostic agent orchestration setup for spec-driven development. Provides skills, steering, templates, and a factory pipeline workflow.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "agent",
+        "orchestration",
+        "spec-driven",
+        "ai",
+        "workflow"
+    ],
+    "homepage": "https://github.com/rhazen35/agent-orchestration",
+    "support": {
+        "source": "https://github.com/rhazen35/agent-orchestration"
+    },
+    "require": {
+        "composer/installers": "^2.0"
+    },
+    "extra": {
+        "installer-name": "agent-orchestration"
+    },
+    "archive": {
+        "exclude": [
+            ".idea",
+            ".vscode",
+            "cache",
+            "inbox",
+            "outbox",
+            "archive",
+            "dashboard.md"
+        ]
+    }
+}
