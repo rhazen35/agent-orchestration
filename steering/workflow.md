@@ -57,18 +57,19 @@ Each phase has a designated skill, input, output, and a required user action to 
 
 Goal: Transform a vague idea into a signed-off specification and plan.
 
-Skill: `spec-architect` (orchestrates `discovery`, `grill-me`, `acceptance-criteria-generator`)
+Skill: `spec-architect` (orchestrates `discovery`, `mcp-orchestrator`, `grill-me`, `acceptance-criteria-generator`)
 
 Steps:
 1. User says "I want to build X" or "Start a new spec for Y."
 2. Run `discovery` on the codebase — identify affected patterns, modules, and data structures.
-3. Run `grill-me` — challenge assumptions on state changes, edge cases, and principle alignment. Provide a recommended answer for every question.
-4. Once shared understanding is reached, run `acceptance-criteria-generator` to produce:
-   - `specification/requirements.md` — functional requirements
-   - `specification/acceptance-criteria.md` — testable criteria using `templates/acceptance-criteria-template.md`
-5. Fill out `templates/plan/plan-template.md` to produce `plan/plan.md`.
-6. Log any significant architectural decisions as an ADR in `records/` using `templates/records/ADR-001-template.md`.
-7. Append a change entry to `records/spec-evolution.log` per `steering/audit-requirements.md`.
+3. Run `mcp-orchestrator` — discover available MCP tools, match against task requirements, enrich spec with live data where applicable.
+4. Run `grill-me` — challenge assumptions on state changes, edge cases, and principle alignment. Provide a recommended answer for every question.
+5. Once shared understanding is reached, run `acceptance-criteria-generator` to produce:
+   - `specification/{namespace}/requirements.md` — functional requirements
+   - `specification/{namespace}/acceptance-criteria.md` — testable criteria using `templates/acceptance-criteria-template.md`
+6. Fill out `templates/plan/plan-template.md` to produce `plan/{namespace}/plan.md`.
+7. Log any significant architectural decisions as an ADR in `records/` using `templates/records/ADR-001-template.md`.
+8. Append a change entry to `records/{namespace}/spec-evolution.log` per `steering/audit-requirements.md`.
 
 Trigger: User explicitly invokes `spec-architect`.
 Gate: User must sign off on `plan/plan.md` before proceeding to Phase 2.
@@ -93,14 +94,15 @@ Gate: User confirms `inbox/{namespace}/tasks.md` looks correct before proceeding
 
 Goal: Implement tasks one at a time with minimal context (JIT).
 
-Skill: `task-processor`
+Skill: `task-processor` (may invoke `mcp-orchestrator` in lightweight mode)
 
 Steps:
 1. Pick the top-most task from `inbox/{namespace}/tasks.md`.
 2. Load only: the task, the file(s) being edited, and `steering/principles.md`. Nothing else.
-3. Implement strictly — no unrelated refactoring.
-4. Move the completed task entry to `outbox/{namespace}/pending-review.md`.
-5. Repeat for the next task only when explicitly asked.
+3. If the task requires external data, invoke `mcp-orchestrator` in lightweight mode — check `archive/mcp-data/{namespace}/` first, call a tool only if data is missing or stale.
+4. Implement strictly — no unrelated refactoring.
+5. Move the completed task entry to `outbox/{namespace}/pending-review.md`.
+6. Repeat for the next task only when explicitly asked.
 
 Trigger: User explicitly says "process next task" or invokes `task-processor`.
 Gate: Each task must be moved to `outbox/{namespace}/pending-review.md` before the next begins.
@@ -177,7 +179,8 @@ These are used throughout the pipeline and are not tied to a single phase:
 | `templates/acceptance-criteria-template.md` | Template for acceptance criteria documents |
 | `templates/plan/plan-template.md` | Template for the plan document |
 | `cache/project-fingerprint.json` | Fingerprint used to determine if a discovery re-scan is needed |
-| `cache/discovery-report.md` | Cached output of the last `discovery` run |
+| `cache/discovery-report.md` | Cached output of the last `discovery` run and MCP capability map |
+| `archive/{namespace}/mcp-data/` | Persisted MCP tool outputs — reused by Worker to avoid re-calling tools |
 | `archive/{namespace}/decision-log.md` | Permanent record of completed tasks and review notes |
 | `CHANGELOG.md` | Human-readable release history |
 | `dashboard.md` | Live control tower — tracks token usage, cost, throughput, and circuit breaker state |

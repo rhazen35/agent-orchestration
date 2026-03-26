@@ -3,17 +3,18 @@ name: task-processor
 description: Executes raw tasks from the planning phase strictly without deviating from the spec or second-guessing decisions. Use when tasks are present in inbox/tasks.md.
 ---
 
-Execute tasks from `inbox/tasks.md` one at a time, strictly following the spec and principles. Do not interpret, expand, or refactor beyond what the task specifies.
+Execute tasks from `inbox/{namespace}/tasks.md` one at a time, strictly following the spec and principles. Do not interpret, expand, or refactor beyond what the task specifies.
 
 ## Trigger
 
-Presence of tasks in `inbox/tasks.md`.
+Presence of tasks in `inbox/{namespace}/tasks.md`.
 
 ## Execution Protocol
 
-1. Pick the top-most task from `inbox/tasks.md`.
+1. Pick the top-most task from `inbox/{namespace}/tasks.md`.
 2. Implement the change strictly following `steering/principles.md`.
-3. Once the code change is made, move the task entry from `inbox/tasks.md` to `outbox/pending-review.md`.
+3. If the task requires external data (live schema, API response, library version, etc.), invoke `mcp-orchestrator` in lightweight mode. Always check `archive/mcp-data/{namespace}/` for cached results before making any tool call.
+4. Once the code change is made, move the task entry from `inbox/{namespace}/tasks.md` to `outbox/{namespace}/pending-review.md`.
 
 ## Constraints
 

@@ -35,11 +35,12 @@ Design → Queue → Production → Sentinel → Quality Control → Archiving
 ### 🧠 Phase 1 — Design
 **Trigger:** "I want to build X" or "Start a new spec for Y"
 
-The `spec-architect` skill orchestrates three sub-skills:
+The `spec-architect` skill orchestrates sub-skills in sequence:
 
 | Sub-skill | What it does |
 |---|---|
 | `discovery` | Maps the codebase, checks cache before re-scanning |
+| `mcp-orchestrator` | Discovers available MCP tools, enriches spec with live data |
 | `grill-me` | Challenges assumptions, provides recommended answers |
 | `acceptance-criteria-generator` | Drafts requirements and testable acceptance criteria |
 
@@ -225,6 +226,7 @@ Every specification gets its own namespace folder — a short kebab-case name ap
 |---|---|
 | `spec-architect` | End-to-end spec creation |
 | `discovery` | Codebase mapping with caching |
+| `mcp-orchestrator` | Dynamic MCP tool discovery and data enrichment |
 | `grill-me` | Assumption stress-testing |
 | `acceptance-criteria-generator` | Requirements → testable criteria |
 | `task-processor` | JIT task implementation |
@@ -246,6 +248,70 @@ Always loaded into every agent context:
 | `steering/governance.md` | Hard resource and loop limits |
 | `steering/audit-requirements.md` | Requirement changes must be logged and ADR'd |
 | `steering/workflow.md` | Full pipeline reference |
+
+---
+
+## MCP Integration
+
+This package is designed to work with [Model Context Protocol (MCP)](https://modelcontextprotocol.io) servers out of the box. MCP tools extend the agent's capabilities beyond local file editing — enabling live database inspection, web search, API fetching, and more.
+
+### How it works
+
+The agent does not hardcode any MCP servers. Instead, it performs a **handshake** at session start:
+
+1. Agent calls `list_tools` to discover what the host environment provides.
+2. Agent matches the returned tool schemas against `steering/mcp-policy.md`.
+3. Authorized tools are used purposefully — local files always take precedence.
+
+### Capability Requirements
+
+The factory expects the host to provide tools for these capabilities:
+
+| Capability | Used for | Fallback |
+|---|---|---|
+| Search | Verify library versions, docs | Ask human |
+| Filesystem | Read/write specs and inbox | Local agent tools |
+| Runtime | Run tests and linting (Sentinel) | Manual checks |
+| Database | Inspect live schemas | Use spec definitions |
+| Version Control | Read issues, PRs, commit history | Use `records/` and `archive/` |
+
+If a capability is missing, the pipeline continues — it never blocks on absent tools.
+
+### Tool Selection Priority
+
+When multiple tools fulfill the same capability, the agent picks in this order:
+
+1. Local filesystem tools (lowest cost)
+2. Specialized local servers (e.g., local Postgres, SQLite)
+3. Remote API servers (e.g., GitHub, Brave Search, Slack)
+
+### The Local-First Rule
+
+Before calling any MCP tool, the agent must check:
+
+1. `specification/{namespace}/` — does the spec already answer this?
+2. `archive/mcp-data/{namespace}/` — has this tool been called and cached?
+3. `cache/discovery-report.md` — is this covered by the last discovery run?
+
+Only if all three are empty or stale does the agent proceed with a tool call. Tool outputs are persisted to `archive/mcp-data/` so the worker never re-calls a tool for the same data.
+
+### MCP in the Pipeline
+
+| Phase | MCP usage |
+|---|---|
+| Phase 1: Design | `mcp-orchestrator` runs full capability mapping, enriches spec with live data |
+| Phase 3: Production | `task-processor` invokes `mcp-orchestrator` in lightweight mode for specific data needs |
+| Phase 3.5: Sentinel | Uses runtime tools (linter, test runner) if available |
+
+### Relevant Files
+
+| File | Purpose |
+|---|---|
+| `steering/mcp-policy.md` | Capability requirements, tool selection logic, authorization rules |
+| `steering/mcp-governance.md` | Hard limits: context budget, write safety, failure fallback |
+| `steering/mcp-etiquette.md` | Local-First rule, purposeful tool use, no spec overwrites |
+| `skills/mcp-orchestrator.md` | The bridge skill — discovery, justification, execution, sentinel filter |
+| `archive/mcp-data/` | Persisted tool outputs, reused across tasks |
 
 ---
 
