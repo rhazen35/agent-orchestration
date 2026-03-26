@@ -12,7 +12,7 @@
     "homepage": "https://github.com/rhazen35/agent-orchestration",
     "repository": {
         "type": "git",
-        "url": "https://github.com/rhazen35/agent-orchestration.git"
+        "url": "git+https://github.com/rhazen35/agent-orchestration.git"
     },
     "license": "MIT",
     "files": [
