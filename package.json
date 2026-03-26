@@ -1,0 +1,26 @@
+{
+    "name": "rhazen35-agent-orchestration",
+    "version": "1.0.0",
+    "description": "A tool-agnostic agent orchestration setup for spec-driven development.",
+    "keywords": [
+        "agent",
+        "orchestration",
+        "spec-driven",
+        "ai",
+        "workflow"
+    ],
+    "homepage": "https://github.com/rhazen35/agent-orchestration",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/rhazen35/agent-orchestration.git"
+    },
+    "license": "MIT",
+    "files": [
+        "skills/",
+        "steering/",
+        "templates/",
+        "records/",
+        "README.md",
+        "CHANGELOG.md"
+    ]
+}
