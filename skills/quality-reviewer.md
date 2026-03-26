@@ -28,3 +28,7 @@ Presence of tasks in `outbox/pending-review.md`.
 - Do not partially approve tasks — a task either fully passes or is rejected.
 - Rejection notes must be specific and actionable, not vague.
 - Do not fix the code yourself — only evaluate and route.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/quality-reviewer.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

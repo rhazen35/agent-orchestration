@@ -42,3 +42,7 @@ For every requirement identified, generate at least:
 - Every requirement in the spec has at least one corresponding checklist item.
 - All criteria are observable and verifiable — no vague terms like "fast" or "user-friendly."
 - The output provides a complete "Definition of Done" for the implementation.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/acceptance-criteria-generator.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

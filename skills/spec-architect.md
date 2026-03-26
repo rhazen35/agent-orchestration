@@ -43,3 +43,7 @@ Fill out `templates/plan/plan-template.md` based on the agreed spec.
 
 - Present the plan to the user for sign-off.
 - Once approved, move the resulting tasks into `inbox/tasks.md`.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/spec-architect.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

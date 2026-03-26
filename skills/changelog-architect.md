@@ -37,3 +37,7 @@ Presence of tasks in `outbox/completed.md`.
 - Only append to the `## [Unreleased]` section — never modify versioned entries.
 - Keep descriptions concise and human-readable.
 - Always clean up `outbox/completed.md` after appending.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/changelog-architect.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

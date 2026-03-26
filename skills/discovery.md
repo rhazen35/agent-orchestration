@@ -44,3 +44,7 @@ Produce a Project Map with these sections:
 - The agent can explain how a specific user journey in `specs/` is currently fulfilled by the code.
 - The agent identifies "No-Go Zones" where refactoring would be high-risk.
 - The agent can list all side effects caused by a primary function.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/discovery.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

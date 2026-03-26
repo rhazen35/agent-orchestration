@@ -249,6 +249,41 @@ Always loaded into every agent context:
 
 ---
 
+## Customizing for Your Project
+
+Every skill, steering file, and template can be overridden at the project level without touching the package files. The agent checks `.agent/` first before falling back to the package defaults.
+
+```
+your-project/
+  .agent/
+    skills/
+      quality-reviewer.md     ← overrides the default
+      sentinel.md             ← overrides the default
+    steering/
+      principles.md           ← overrides the default
+    templates/
+      plan/
+        plan-template.md      ← overrides the default
+```
+
+To extend rather than replace, start your override file with:
+
+```markdown
+# [Skill Name] — Project Extension
+
+> Extends the base skill. All base behavior applies unless explicitly overridden below.
+
+## Project-Specific Additions
+
+...your additions here...
+```
+
+Two files should never be overridden: `steering/workflow.md` (the pipeline contract) and `steering/overrides.md` (the override system itself).
+
+See `steering/overrides.md` for the full resolution order, a complete list of overridable files, and guidance on what to override with caution.
+
+---
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

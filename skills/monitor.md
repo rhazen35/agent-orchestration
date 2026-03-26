@@ -71,3 +71,7 @@ Examples:
 - Never delete historical activity log entries beyond the 20-entry rolling window.
 - Never reset metrics without explicit human instruction.
 - Status may only be reset to 🟢 OPERATIONAL by a human.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/monitor.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

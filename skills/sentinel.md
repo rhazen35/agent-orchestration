@@ -47,3 +47,7 @@ If the `sentinel` fails 3 consecutive times on the same task, do not reject agai
 
 - Do not perform deep reasoning or spec comparison — that is the `quality-reviewer`'s job.
 - Keep this skill fast and cheap. Binary pass/fail only.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/sentinel.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

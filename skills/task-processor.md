@@ -20,3 +20,7 @@ Presence of tasks in `inbox/tasks.md`.
 - Do not refactor unrelated code.
 - Do exactly what the task specifies — no more, no less.
 - Do not second-guess or deviate from the spec.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/task-processor.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.

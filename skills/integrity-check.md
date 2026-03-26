@@ -43,3 +43,7 @@ Generate a concise Integrity Audit Report with these sections:
 - The code reflects exactly the intent of `specs/`.
 - The codebase maintains the architecture defined in `steering/`.
 - No magic or hidden global states were introduced.
+
+## Project Overrides
+
+This skill can be extended or replaced at the project level. Create `.agent/skills/integrity-check.md` in your project root to override this default. See `steering/overrides.md` for the resolution order and extension pattern.
