@@ -1,0 +1,212 @@
+================================================================================
+  KITO SPACE — AI Context & Master Execution Brief
+================================================================================
+
+
+1. THE VISION
+──────────────────────────────────────────────────────────────────────────────
+
+Kito Space is a "Universal Spatial Management" platform. The initial focus
+is Hospitality (hotel rooms, holiday apartments), but the architecture
+supports any unit with a physical or logical boundary: storage boxes,
+security lockers, real estate.
+
+  Primary Users:    Back-office staff, hotel managers, cleaning crews, cooks
+  Expansion Goal:   API-First platform with external booking integrations
+                    and Stripe payments
+
+
+2. TECHNICAL STACK
+──────────────────────────────────────────────────────────────────────────────
+
+  Backend:          Go
+  Database:         PostgreSQL 16
+  Message Broker:   RabbitMQ 3
+  Frontend:         Go templates + Tailwind CSS v4 + Stimulus JS + Hotwire
+                    Turbo (Frames + Streams). No SPA. SSE for real-time.
+  Primary Keys:     UUIDv7 (time-sorted, collision-resistant)
+  Data Pattern:     CQRS — writes to normalized tables, reads from
+                    denormalized "Read Models" via event-driven projectionists
+  Consistency:      Saga Pattern (orchestrated) + Outbox Pattern for
+                    guaranteed at-least-once event delivery to RabbitMQ
+  Concurrency:      Optimistic Locking (version-based)
+  Multi-Tenancy:    Every tenant-scoped table has customer_id. JWT claims
+                    carry customer ID and role. Per-tenant branding.
+  Auth:             Short-lived JWT + persistent sessions with refresh token
+                    rotation. Security stamp invalidation. Invalid tokens
+                    clear cookies and redirect to login.
+  Observability:    Structured logging (slog), Loki, Grafana, Promtail
+  CI/CD:            GitHub Actions, migration cycle tests, Koyeb deployment
+
+
+3. EVOLUTION PHASES
+──────────────────────────────────────────────────────────────────────────────
+
+Phase 1: Identity & Profile                                        [COMPLETE]
+
+  Separated identities (credentials/auth) from contacts (profiles).
+  Every contact mutation triggers an Outbox event to sync the
+  read_contacts read model.
+
+Phase 2: Units & Hierarchy                                         [COMPLETE]
+
+  Recursive units table — a property, floor, room, and bed are all units.
+  Capabilities flow down the hierarchy. Flattened read_units_explorer
+  for instant tree traversal.
+
+Phase 3: Reservations & Temporal Logic                             [COMPLETE]
+
+  Reservations, unit allocations, guest occupants. Date-exploder
+  projectionist for occupancy heatmap. Dashboard KPIs. Reservation
+  search read model. Optimistic locking for double-booking prevention.
+  Ownership with assignees, followers, participants.
+
+Phase 4: Multi-Tenancy & Auth                                     [COMPLETE]
+
+  Customer table with slug routing. Identity-customer links with roles.
+  Per-tenant branding (color, logo). JWT + persistent sessions with
+  refresh token rotation. IAM with roles, permissions, projectionists.
+  Super Admin bootstrap. Customer switching without re-auth.
+
+Phase 5: Communication & Email                                    [COMPLETE]
+
+  Threaded guest communication per reservation. Inbound email via
+  webhook (Maddy SMTP). Outbound email with per-tenant SMTP credentials
+  (encrypted at rest). Reply-to threading.
+
+Phase 6: Operational Features                                     [COMPLETE]
+
+  Availability exceptions, out-of-office, notification settings,
+  services (cleaning, catering), stepper overlay for long-running ops.
+
+Phase 7: Tiers, Add-ons & Admin Console                           [COMPLETE]
+
+  Global plan/addon registry. Tenant module switchboard with per-tenant
+  addon state (enabled, free override, custom pricing, overage settings).
+  Encrypted module configs. Admin console with tenant management,
+  impersonation, audit log.
+
+Phase 8: Subscription Billing                                     [COMPLETE]
+
+  Subscriptions with monthly/annual cycles. Invoice system with
+  sequential numbering and PDF generation. Usage metering via
+  projectionist. Addon pricing (metered vs fixed). Pure-math billing
+  calculator. Proration service for mid-cycle plan changes.
+  Anniversary billing saga (freeze → calculate → invoice → charge →
+  reset → advance). Plan change saga with pro-rata settlement.
+  Daily billing cron. Customer and admin billing UIs.
+
+Phase 9: Overage Billing & UI Modernization                       [COMPLETE]
+
+  Per-addon overage controls (overage_enabled, overage_price_cents,
+  bonus_units on customer_addons). Overage calculation integrated into
+  anniversary saga. Customer plan change UI with cost preview and
+  usage trap warnings. Quota bar/flash updated with total capacity
+  and overage count.
+
+  All admin tables converted to card-based layouts (tenant list,
+  billing overview, plans, addon switchboard, invoices). Inline forms
+  replaced with Flowbite modals. Confirmation modals for destructive
+  actions. Mobile-friendly buttons with 44px touch targets.
+
+Phase 10: SSE Flash Messages                                      [COMPLETE]
+
+  Real-time quota toast via SSE after reservation completion.
+  Billing cycle toast. All flash messages via Turbo Stream.
+
+Phase 11: Billing Real-time PDF                                   [COMPLETE]
+
+  Invoice PDF generation with Go templates and customer branding.
+  File storage. Authenticated download endpoint.
+
+
+4. ARCHITECTURE INVENTORY
+──────────────────────────────────────────────────────────────────────────────
+
+  Sagas (10):
+    registration, booking, booking_update, unit_creation, unit_update,
+    customer_provisioning, rotate_session, hospitality_extension,
+    anniversary_billing, plan_change
+
+  Projectionists (7):
+    contact, explorer, occupancy, dashboard, IAM, addon, usage
+
+  Read Models (6):
+    read_contacts, read_units_explorer, read_unit_occupancy,
+    read_dashboard_metrics, read_reservations, read_identity_permissions
+
+  Domain Models: ~45
+  Migrations:    ~35 (two-phase strategy for destructive changes)
+
+  Docker Compose (8 services):
+    app (Go + Air), postgres, rabbitmq, mailpit, maddy, loki,
+    promtail, grafana + auth-proxy
+
+
+5. PLANS & TEST CUSTOMERS
+──────────────────────────────────────────────────────────────────────────────
+
+  Plans:
+    Lumen     hospitality, pos 1, EUR 99/mo, 25 included reservations
+    Kito      hospitality, pos 2, EUR 30/mo, 50 included, EUR 1.50/overage
+
+  Test Customers:
+    Buddhist Center Kiel      admin@dwbn.dev              Lumen, 18 reservations
+    Yoga Studio Hamburg       admin@yoga-hamburg.com      Inactive (admin testing)
+    Meditation Center Berlin  admin@meditation-berlin.com Active, no support access
+    Sunrise Retreat Munich    admin@sunrise-munich.com    Lumen, fresh (no data)
+    Kito Scaling Center       admin@kito-scaling.com      Kito, 75/50 res (25 overage)
+
+  All test users use the password from TEST_USER_PASSWORD env var
+  (default: "password").
+
+
+6. BUSINESS RULES
+──────────────────────────────────────────────────────────────────────────────
+
+  - Domain specialization: "Room" in hospitality, "Locker" in logistics
+  - Audit fields on every table: created_at/by, updated_at/by, deleted_at/by
+  - System ledger tracks all mutations
+  - Multi-tenancy: customer_id on every tenant-scoped table
+  - Row Level Security on every new table
+  - Fair-Play Billing:
+      Subscription fees (fixed) and overage fees (variable) are separate
+      Overages are retrospective (end of billing cycle)
+      Upgrades trigger immediate pro-rata charges
+      Downgrades issue service credits (auto-applied to next invoice)
+  - All monetary values in cents (integer, no floating-point)
+
+
+7. AI INTERACTION RULES
+──────────────────────────────────────────────────────────────────────────────
+
+  1. Write-side mutations go through Saga Coordinator with Outbox events
+     in the same transaction.
+
+  2. New tables need customer_id, RLS, UUIDv7 PKs, and a DOWN section
+     in the migration.
+
+  3. Repositories use optimistic locking (version increments) where
+     applicable.
+
+  4. No breaking changes. Two-phase migrations for destructive changes.
+
+  5. All protected handlers receive AuthContext via middleware
+     (IdentityID, SessionID, CustomerID, CustomerRole, Permissions,
+     Roles, MFAVerified, SchemaVersion).
+
+  6. UI mutations use Stimulus + Turbo Streams + SSE. No raw DOM
+     manipulation. Cards use border-l-4 with status colors, floating
+     badges, responsive grid. Actions use Flowbite modals.
+
+  7. Tests are mandatory. Property-based tests use pgregory.net/rapid.
+     Integration tests skippable with -short.
+
+  8. Write code directly, don't delegate. Read patterns once, batch
+     related work, run diagnostics after each batch.
+
+  9. Billing math: all cents (integer). Overage = max(0, usage - capacity)
+     * rate. Proration = price * remainingDays / totalDays.
+     Credits = min(subtotal, creditBalance).
+
+================================================================================
